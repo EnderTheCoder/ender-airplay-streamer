@@ -1,7 +1,6 @@
 // include/airplay_streamer.hpp
 #pragma once
 
-#include <cstdint>
 #include <functional>
 #include <memory>
 #include <vector>
@@ -9,8 +8,7 @@
 
 struct AVFrame;
 
-namespace airplay_streamer {
-
+namespace ender::airplay_streamer {
     enum class LogLevel {
         Debug = 0,
         Info = 1,
@@ -27,22 +25,22 @@ namespace airplay_streamer {
         bool low_latency = false;
 
         AVFrameCallback on_video_data;
-        AVFrameCallback on_audio_data; // 可选，如果要用解码后的 AAC 播放的话
+        AVFrameCallback on_audio_data;
 
-        std::function<void(LogLevel level, const char*)> log_callback = nullptr;
+        std::function<void(LogLevel level, const char *)> log_callback = nullptr;
     };
 
     class AirplayStreamer {
     public:
-        explicit AirplayStreamer(Config config);
+        explicit AirplayStreamer(const Config &config);
 
         ~AirplayStreamer();
 
         // 启动服务线程
-        void start();
+        void start() const;
 
         // 停止服务
-        void stop();
+        void stop() const;
 
         // 是否正在运行中
         bool isRunning() const;
@@ -51,5 +49,4 @@ namespace airplay_streamer {
         class Impl;
         std::unique_ptr<Impl> impl_;
     };
-
 } // namespace airplay_streamer

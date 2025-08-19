@@ -36,8 +36,7 @@ This project depends on the RPiPlay library (included as submodules):
 
 ```bash
 # Clone the repository with submodules
-git clone --recursive https://github.com/your-username/airplay-streamer.git
-cd airplay-streamer
+git clone --recursive https://github.com/EnderTheCoder/ender-airplay-streamer
 
 # Create build directory
 mkdir build

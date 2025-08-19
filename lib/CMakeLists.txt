@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.4.1)
+cmake_minimum_required(VERSION 3.27)
 include_directories( playfair llhttp )
 
 aux_source_directory(. play_src)

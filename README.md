@@ -229,4 +229,4 @@ This project builds upon:
 
 ## Support
 
-For issues and feature requests, please [open an issue](https://github.com/your-username/airplay-streamer/issues) on GitHub.
+For issues and feature requests, please [open an issue](https://github.com/EnderTheCoder/ender-airplay-streamer/issues) on GitHub.

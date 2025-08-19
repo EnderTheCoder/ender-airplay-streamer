@@ -5,16 +5,17 @@
 #include <functional>
 #include <memory>
 #include <vector>
+#include <string>
 
 struct AVFrame;
 
 namespace airplay_streamer {
 
     enum class LogLevel {
-        Debug,
-        Info,
-        Warning,
-        Error
+        Debug = 0,
+        Info = 1,
+        Warning = 2,
+        Error = 3
     };
 
     using AVFrameCallback = std::function<void(std::shared_ptr<AVFrame>, int64_t timestamp)>;

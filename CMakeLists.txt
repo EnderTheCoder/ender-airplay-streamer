@@ -9,6 +9,12 @@ project(airplay_streamer VERSION 0.1.0)
 if(NOT CMAKE_BUILD_TYPE)
 	set(CMAKE_BUILD_TYPE "Release" CACHE STRING "")
 endif()
+find_package(PkgConfig REQUIRED)
+pkg_check_modules(FFMPEG REQUIRED IMPORTED_TARGET
+		libavcodec
+		libavformat
+		libavutil
+)
 
 # 添加库子目录
 add_subdirectory(lib/playfair)
@@ -26,7 +32,15 @@ target_include_directories(airplay_streamer PUBLIC
 )
 
 # 链接依赖库（原始airplay库中的组件）
-target_link_libraries(airplay_streamer PRIVATE airplay playfair llhttp)
+target_link_libraries(airplay_streamer PRIVATE airplay playfair llhttp PkgConfig::FFMPEG)
+
+# Test executable
+add_executable(airplay_test test/test.cpp)
+target_link_libraries(airplay_test PRIVATE airplay_streamer PkgConfig::FFMPEG)
+
+# Install test executable
+install(TARGETS airplay_test
+		RUNTIME DESTINATION bin)
 
 # 安装规则
 install(TARGETS airplay_streamer

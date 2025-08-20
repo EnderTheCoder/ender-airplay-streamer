@@ -65,7 +65,9 @@ namespace ender::airplay_streamer {
         callbacks.conn_destroy = [](void *cls) {
             // 连接销毁回调
         };
+        callbacks.audio_process = [](void *cls, raop_ntp_t *ntp, aac_decode_struct *data) {
 
+        };
         callbacks.video_process = [](void *cls, raop_ntp_t *ntp, h264_decode_struct *data) {
             auto *streamer = static_cast<AirplayStreamer *>(cls);
 
@@ -150,16 +152,16 @@ namespace ender::airplay_streamer {
 
         raop_set_dnssd(impl_->raop, impl_->dnssd);
 
-        unsigned short port = 0;
-        if (raop_start(impl_->raop, &port) != 0) {
+        unsigned short port = 25564;
+        if (raop_start(impl_->raop, &port) < 0) {
             throw std::runtime_error("Failed to start RAOP");
         }
 
-        if (dnssd_register_raop(impl_->dnssd, port) != 0) {
+        if (dnssd_register_raop(impl_->dnssd, port) < 0) {
             throw std::runtime_error("Failed to register RAOP service");
         }
 
-        if (dnssd_register_airplay(impl_->dnssd, port + 1) != 0) {
+        if (dnssd_register_airplay(impl_->dnssd, port + 1) < 0) {
             throw std::runtime_error("Failed to register AirPlay service");
         }
     }

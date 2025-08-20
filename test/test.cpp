@@ -5,8 +5,10 @@
 #include <thread>
 #include <csignal>
 #include <fstream>
+
 extern "C" {
 #include <libavutil/frame.h>
+#include <libavutil/pixdesc.h>
 }
 
 using namespace ender::airplay_streamer;
@@ -71,7 +73,7 @@ int main() {
                               << duration.count() << "ms ("
                               << (frame_count * 1000.0 / duration.count()) << " FPS)" << std::endl;
                     std::cout << "[INFO] Frame size: " << frame->width << "x" << frame->height
-                              << ", format: " << frame->format << std::endl;
+                              << ", format: " << av_get_pix_fmt_name(static_cast<AVPixelFormat>(frame->format)) << std::endl;
                 }
 
                 // 可选：保存前几帧到文件进行调试

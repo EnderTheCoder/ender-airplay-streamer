@@ -14,7 +14,7 @@ if (WIN32)
             pthread
             playfair
             llhttp
-            PRIVATE unofficial::libplist::libplist
+            unofficial::libplist::libplist
     )
 elseif (UNIX)
     find_library(LIBPLIST NAMES plist plist-2.0)

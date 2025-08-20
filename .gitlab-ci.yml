@@ -1,0 +1,60 @@
+stages:
+  - build
+  - publish
+  - deploy
+
+build-linux-job:
+  stage: build
+  image: enderthecoder/ender-airplay-streamer
+  script:
+    - mkdir build-linux
+    - cd build-linux
+    - cmake -G "Ninja Multi-Config"  ..
+    - cmake --build . -j --config Release
+  artifacts:
+    name: ender-airplay-streamer-${CI_PIPELINE_ID}-linux-x64
+    paths:
+      - build-linux/Release/libairplay_streamer.a
+    expire_in: 14 days
+  tags:
+    - docker
+
+build-windows-job:
+  stage: build
+  script:
+    - mkdir build-windows
+    - cd build-windows
+    - cmake ..
+    - cmake --build . --config Release
+  artifacts:
+    name: ender-airplay-streamer-${CI_PIPELINE_ID}-windows-x64
+    paths:
+      - build-windows/Release/libairplay_streamer.lib
+    expire_in: 14 days
+  tags:
+    - windows
+
+build-docker-job:
+  stage: build
+  script:
+    - docker build -t enderthecoder/ender-airplay-streamer:latest .
+  tags:
+    - linux
+
+publish-docker-job:
+  stage: publish
+  script:
+    - docker push enderthecoder/ender-airplay-streamer
+  tags:
+    - linux
+
+#deploy-windows-job:
+#  stage: deploy
+#  script:
+#    - mkdir deploy-windows
+#    - cd deploy-windows
+#    - cmake ..
+#    - cmake --build . --config Release
+#    - cmake --install .
+#  tags:
+#    - windows

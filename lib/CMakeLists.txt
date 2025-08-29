@@ -24,10 +24,15 @@ elseif (UNIX)
     target_link_libraries(airplay
             ${LIBPLIST})
 endif ()
-
 find_package(OpenSSL 1.1.1 REQUIRED)
 target_compile_definitions(airplay PUBLIC OPENSSL_API_COMPAT=0x10101000L)
 target_link_libraries(airplay OpenSSL::Crypto)
-target_link_libraries(airplay dns_sd)
+if (UNIX AND NOT APPLE)
 
-        
+    target_link_libraries(airplay dns_sd)
+endif ()
+
+if (WIN32)
+    include_directories(${mdns_INCLUDE_DIRS})
+    target_link_libraries(airplay ws2_32 iphlpapi)
+endif ()

@@ -3,7 +3,7 @@ cmake_minimum_required(VERSION 3.27)
 set(CMAKE_CXX_STANDARD 23)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
-project(airplay_streamer VERSION 0.2.0)
+project(AirplayStreamer VERSION 0.2.0)
 
 # 设置构建类型
 if(NOT CMAKE_BUILD_TYPE)

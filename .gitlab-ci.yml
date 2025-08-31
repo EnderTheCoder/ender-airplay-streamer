@@ -48,13 +48,13 @@ publish-docker-job:
   tags:
     - linux
 
-#deploy-windows-job:
-#  stage: deploy
-#  script:
-#    - mkdir deploy-windows
-#    - cd deploy-windows
-#    - cmake ..
-#    - cmake --build . --config Release
-#    - cmake --install .
-#  tags:
-#    - windows
+deploy-windows-job:
+  stage: deploy
+  script:
+    - mkdir deploy-windows
+    - cd deploy-windows
+    - cmake ..
+    - cmake --build . --config Release
+    - cmake --install .
+  tags:
+    - windows

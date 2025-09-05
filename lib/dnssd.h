@@ -7,24 +7,24 @@ extern "C" {
 
     // Windows 下避免和 Bonjour SDK 冲突
 #ifdef _WIN32
-    // 如果已经包含了 Bonjour SDK 的 dns_sd.h，就不要重新定义
-#ifndef _DNS_SD_H
-#if defined(WIN32) && defined(DLL_EXPORT)
-# define DNSSD_API __declspec(dllexport)
-#else
+    // Windows下避免和Bonjour SDK冲突
+#ifdef _DNS_SD_H
+    // 如果已经包含了Bonjour SDK的dns_sd.h，使用其定义
 # define DNSSD_API
+#else
+# if defined(DLL_EXPORT)
+#  define DNSSD_API __declspec(dllexport)
+# else
+#  define DNSSD_API
+# endif
 #endif
 #else
-    // 使用 Bonjour SDK 的定义
-#define DNSSD_API
-#endif
-#else
-    // Linux/Unix 保持原有定义
-#if defined(WIN32) && defined(DLL_EXPORT)
-# define DNSSD_API __declspec(dllexport)
-#else
-# define DNSSD_API
-#endif
+    // Linux/Unix保持原有定义
+# if defined(WIN32) && defined(DLL_EXPORT)
+#  define DNSSD_API __declspec(dllexport)
+# else
+#  define DNSSD_API
+# endif
 #endif
 
 #define DNSSD_ERROR_NOERROR       0

@@ -21,6 +21,56 @@
 #include <string.h>
 #include <stdbool.h>
 
+
+// 在文件最开头添加Windows套接字处理
+#ifdef _WIN32
+#define WIN32_LEAN_AND_MEAN
+#include <windows.h>
+#include <winsock2.h>
+#include <ws2tcpip.h>
+// 确保只包含一次Winsock头文件
+#undef WIN32_LEAN_AND_MEAN
+#endif
+
+// 添加Windows时间函数兼容性
+#ifdef _WIN32
+#include <windows.h>
+#include <time.h>
+// Windows下没有clock_gettime，需要实现
+#define CLOCK_REALTIME 0
+typedef int clockid_t;
+static int clock_gettime(clockid_t clk_id, struct timespec *tp) {
+    (void)clk_id;
+    static LARGE_INTEGER frequency;
+    static BOOL is_qpc_available = -1;
+
+    if (is_qpc_available == -1) {
+        is_qpc_available = QueryPerformanceFrequency(&frequency);
+    }
+
+    if (is_qpc_available) {
+        LARGE_INTEGER now;
+        QueryPerformanceCounter(&now);
+        tp->tv_sec = now.QuadPart / frequency.QuadPart;
+        tp->tv_nsec = (long)((now.QuadPart % frequency.QuadPart) * 1e9 / frequency.QuadPart);
+    } else {
+        FILETIME ft;
+        ULARGE_INTEGER ui;
+        GetSystemTimeAsFileTime(&ft);
+        ui.LowPart = ft.dwLowDateTime;
+        ui.HighPart = ft.dwHighDateTime;
+        // 转换为Unix时间戳 (从1601-01-01到1970-01-01)
+        ui.QuadPart -= 116444736000000000ULL;
+        tp->tv_sec = (long)(ui.QuadPart / 10000000ULL);
+        tp->tv_nsec = (long)((ui.QuadPart % 10000000ULL) * 100);
+    }
+    return 0;
+}
+#else
+#include <sys/time.h>
+#include <time.h>
+#endif
+
 #include "raop_ntp.h"
 #include "threads.h"
 #include "compat.h"
@@ -50,7 +100,11 @@ struct raop_ntp_s {
     mutex_handle_t run_mutex;
 
     mutex_handle_t wait_mutex;
-    cond_handle_t wait_cond;
+#ifdef _WIN32
+    CONDITION_VARIABLE wait_cond;
+#else
+    pthread_cond_t wait_cond;
+#endif
 
     raop_ntp_data_t data[RAOP_NTP_DATA_COUNT];
     int data_index;
@@ -325,11 +379,19 @@ raop_ntp_thread(void *arg)
         struct timeval now;
         struct timespec wait_time;
         MUTEX_LOCK(raop_ntp->wait_mutex);
+#ifdef _WIN32
+        // Windows下使用简单的Sleep
+        MUTEX_UNLOCK(raop_ntp->wait_mutex);
+        Sleep(3000);
+#else
+        struct timeval now;
+        struct timespec wait_time;
         gettimeofday(&now, NULL);
         wait_time.tv_sec = now.tv_sec + 3;
         wait_time.tv_nsec = now.tv_usec * 1000;
         pthread_cond_timedwait(&raop_ntp->wait_cond, &raop_ntp->wait_mutex, &wait_time);
         MUTEX_UNLOCK(raop_ntp->wait_mutex);
+#endif
     }
 
     // Ensure running reflects the actual state

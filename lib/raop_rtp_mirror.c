@@ -20,7 +20,24 @@
 #include <assert.h>
 #include <errno.h>
 #include <stdbool.h>
+#ifdef _WIN32
+#include <ws2tcpip.h>
+// Windows下定义TCP选项常量
+#ifndef SOL_TCP
+#define SOL_TCP IPPROTO_TCP
+#endif
+#ifndef TCP_KEEPIDLE
+#define TCP_KEEPIDLE 3
+#endif
+#ifndef TCP_KEEPINTVL
+#define TCP_KEEPINTVL 17
+#endif
+#ifndef TCP_KEEPCNT
+#define TCP_KEEPCNT 16
+#endif
+#else
 #include <netinet/tcp.h>
+#endif
 
 #include "raop.h"
 #include "netutils.h"
@@ -375,7 +392,16 @@ raop_rtp_mirror_thread(void *arg)
                 if (h264.sps_size + h264.pps_size < 102400) {
                     // Copy the sps and pps into a buffer to hand to the decoder
                     int sps_pps_len = (h264.sps_size + h264.pps_size) + 8;
-                    unsigned char sps_pps[sps_pps_len];
+                    // 使用动态内存分配代替变长数组
+                    unsigned char* sps_pps = (unsigned char*)malloc(sps_pps_len);
+                    if (!sps_pps) {
+                        logger_log(raop_rtp_mirror->logger, LOGGER_ERR, "Failed to allocate memory for SPS/PPS");
+                        free(h264.sequence_parameter_set);
+                        free(h264.picture_parameter_set);
+                        free(payload);
+                        payload = NULL;
+                        continue;
+                    }
                     sps_pps[0] = 0;
                     sps_pps[1] = 0;
                     sps_pps[2] = 0;
@@ -397,6 +423,7 @@ raop_rtp_mirror_thread(void *arg)
                     h264_data.frame_type = 0;
                     h264_data.pts = 0;
                     raop_rtp_mirror->callbacks.video_process(raop_rtp_mirror->callbacks.cls, raop_rtp_mirror->ntp, &h264_data);
+                    free(sps_pps);
                 }
                 free(h264.picture_parameter_set);
                 free(h264.sequence_parameter_set);

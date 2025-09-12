@@ -12,7 +12,7 @@ add_library(airplay
 target_link_libraries(airplay
         pthread
         playfair
-        llhtml)
+        llhttp)
 
 if (WIN32)
     find_package(unofficial-libplist CONFIG REQUIRED)

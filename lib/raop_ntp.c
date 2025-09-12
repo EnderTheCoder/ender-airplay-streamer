@@ -384,8 +384,8 @@ raop_ntp_thread(void *arg)
         MUTEX_UNLOCK(raop_ntp->wait_mutex);
         Sleep(3000);
 #else
-        struct timeval now;
-        struct timespec wait_time;
+        // struct timeval now;
+        // struct timespec wait_time;
         gettimeofday(&now, NULL);
         wait_time.tv_sec = now.tv_sec + 3;
         wait_time.tv_nsec = now.tv_usec * 1000;

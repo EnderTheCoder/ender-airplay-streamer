@@ -10,7 +10,6 @@ add_library(airplay
 )
 
 target_link_libraries(airplay
-        pthread
         playfair
         llhttp)
 
@@ -19,6 +18,7 @@ if (WIN32)
     target_link_libraries(airplay
             unofficial::libplist::libplist
     )
+    find_package(PThreads4W REQUIRED)
 
     # 🔧 添加 Bonjour SDK 支持
     # 方法1: 查找已安装的 Bonjour SDK
@@ -53,7 +53,7 @@ if (WIN32)
 
 elseif (UNIX)
     find_library(LIBPLIST NAMES plist plist-2.0)
-    target_link_libraries(airplay ${LIBPLIST})
+    target_link_libraries(airplay ${LIBPLIST} pthread)
 endif ()
 
 find_package(OpenSSL 1.1.1 REQUIRED)
@@ -65,5 +65,5 @@ if (UNIX AND NOT APPLE)
 endif ()
 
 if (WIN32)
-    target_link_libraries(airplay ws2_32 iphlpapi)
+    target_link_libraries(airplay ws2_32 iphlpapi PThreads4W::PThreads4W)
 endif ()

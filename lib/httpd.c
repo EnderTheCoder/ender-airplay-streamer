@@ -75,6 +75,7 @@ httpd_init(logger_t *logger, httpd_callbacks_t *callbacks, int max_connections)
 
     /* Use the logger provided */
     httpd->logger = logger;
+    MUTEX_CREATE(httpd->run_mutex);
 
     /* Save callback pointers */
     memcpy(&httpd->callbacks, callbacks, sizeof(httpd_callbacks_t));

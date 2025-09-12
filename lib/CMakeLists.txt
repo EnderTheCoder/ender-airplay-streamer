@@ -32,8 +32,6 @@ if (WIN32)
     find_library(BONJOUR_LIBRARY
             NAMES dnssd
             PATHS
-            "C:/Program Files/Bonjour SDK/Lib/Win32"
-            "C:/Program Files (x86)/Bonjour SDK/Lib/Win32"
             "C:/Program Files/Bonjour SDK/Lib/x64"
             "C:/Program Files (x86)/Bonjour SDK/Lib/x64"
             ENV LIB

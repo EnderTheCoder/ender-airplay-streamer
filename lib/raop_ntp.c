@@ -14,12 +14,23 @@
  */
 
 // Some of the code in here comes from https://github.com/juhovh/shairplay/pull/25/files
-
 #include <assert.h>
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
 #include <stdbool.h>
+
+// 包含Windows兼容头文件
+#include "windows_compat.h"
+
+#ifdef _WIN32
+// Windows下已经通过windows_compat.h包含了必要的头文件
+#else
+#include <sys/time.h>
+#include <time.h>
+#include <sys/ioctl.h>
+#include <unistd.h>
+#endif
 
 #include "raop_ntp.h"
 #include "threads.h"
@@ -50,7 +61,7 @@ struct raop_ntp_s {
     mutex_handle_t run_mutex;
 
     mutex_handle_t wait_mutex;
-    cond_handle_t wait_cond;
+    cond_handle_t wait_cond;  // 统一使用pthread条件变量
 
     raop_ntp_data_t data[RAOP_NTP_DATA_COUNT];
     int data_index;
@@ -184,7 +195,6 @@ raop_ntp_destroy(raop_ntp_t *raop_ntp)
 unsigned short raop_ntp_get_port(raop_ntp_t *raop_ntp) {
     return raop_ntp->timing_lport;
 }
-
 static int
 raop_ntp_init_socket(raop_ntp_t *raop_ntp, int use_ipv6)
 {
@@ -203,7 +213,8 @@ raop_ntp_init_socket(raop_ntp_t *raop_ntp, int use_ipv6)
     struct timeval tv;
     tv.tv_sec = 0;
     tv.tv_usec = 300000;
-    if (setsockopt(tsock, SOL_SOCKET, SO_RCVTIMEO, &tv, sizeof(tv)) < 0) {
+    // 修复setsockopt调用，传递正确的参数类型
+    if (setsockopt(tsock, SOL_SOCKET, SO_RCVTIMEO, (const char*)&tv, sizeof(tv)) < 0) {
         goto sockets_cleanup;
     }
 
@@ -235,7 +246,6 @@ raop_ntp_flush_socket(int fd)
         }
     }
 }
-
 static THREAD_RETVAL
 raop_ntp_thread(void *arg)
 {
@@ -321,15 +331,21 @@ raop_ntp_thread(void *arg)
             }
         }
 
-        // Sleep for 3 seconds
+        // Sleep for 3 seconds - 使用跨平台的方式
+        MUTEX_LOCK(raop_ntp->wait_mutex);
+#ifdef _WIN32
+        // Windows下使用简单的Sleep，然后解锁互斥锁
+        MUTEX_UNLOCK(raop_ntp->wait_mutex);
+        Sleep(3000);
+#else
         struct timeval now;
         struct timespec wait_time;
-        MUTEX_LOCK(raop_ntp->wait_mutex);
         gettimeofday(&now, NULL);
         wait_time.tv_sec = now.tv_sec + 3;
         wait_time.tv_nsec = now.tv_usec * 1000;
         pthread_cond_timedwait(&raop_ntp->wait_cond, &raop_ntp->wait_mutex, &wait_time);
         MUTEX_UNLOCK(raop_ntp->wait_mutex);
+#endif
     }
 
     // Ensure running reflects the actual state
@@ -340,7 +356,6 @@ raop_ntp_thread(void *arg)
     logger_log(raop_ntp->logger, LOGGER_DEBUG, "raop_ntp exiting thread");
     return 0;
 }
-
 void
 raop_ntp_start(raop_ntp_t *raop_ntp, unsigned short *timing_lport)
 {

@@ -46,7 +46,7 @@
 # define USE_LIBDL 0
 #endif
 
-#if defined(WIN32) || USE_LIBDL
+#if USE_LIBDL
 # ifdef WIN32
 #  include <stdint.h>
 #  if !defined(EFI32) && !defined(EFI64)

@@ -15,6 +15,9 @@ target_link_libraries(airplay
         llhttp)
 
 if (WIN32)
+
+    target_compile_definitions(airplay PRIVATE WIN32_LEAN_AND_MEAN _WINSOCK_DEPRECATED_NO_WARNINGS)
+
     find_package(unofficial-libplist CONFIG REQUIRED)
     target_link_libraries(airplay
             unofficial::libplist::libplist

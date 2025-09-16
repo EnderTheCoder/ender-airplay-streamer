@@ -24,7 +24,7 @@ build-windows-job:
   script:
     - mkdir build-windows
     - cd build-windows
-    - cmake .. -DCMAKE_TOOLCHAIN_FILE=C:/vcpkg-2025.01.13/scripts/buildsystems/vcpkg.cmake
+    - cmake ..
     - cmake --build . --config Release
   artifacts:
     name: ender-airplay-streamer-${CI_PIPELINE_ID}-windows-x64
